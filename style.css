@@ -1,0 +1,15 @@
+body {
+  margin: 0 auto;
+}
+
+.game-board {
+  display: flex;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.square {
+  width: 2%;
+  padding-top: 2%;
+  background-color: grey;
+}
