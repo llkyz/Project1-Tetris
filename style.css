@@ -13,3 +13,11 @@ body {
   padding-top: 2%;
   background-color: grey;
 }
+
+.occupied {
+  background-color: blue;
+}
+
+.currentBlock {
+  background-color: red;
+}

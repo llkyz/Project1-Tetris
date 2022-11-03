@@ -1,0 +1,74 @@
+globals
+- shape of each block
+- rotation positions for each block shape
+
+
+function createboard
+
+function createblock
+- roll random number to determine block shape
+- create array with the size of bounding box, and fill with the block shape
+- record current rotation position
+- check to see if the location on the gameboard is empty to place block
+	* if its not empty, GAME OVER
+- otherwise, place block on gameboard, with another array for its real position on the board
+- start setinterval for falling function
+
+setinterval for falling
+- call the falling function
+- set the time between each interval
+
+function falling
+- move bounding box and actual block 1 pixel down and place it into a tempholder
+- for each square in the tempholder, check if it'll overlap with an existing block
+	* if it overlaps, fix block into place, check if GAME OVER, check if any lines are filled, call a new createblock
+	* if there's no overlap, move the actual block down
+
+function nudge left/right
+- move bounding box and actual block 1 pixel left/right and place it into a tempholder
+- for each square in the tempholder, check if it'll overlap with an existing block or exceed the side walls
+	* if it overlaps, nudge fails and does nothing
+	* if there's no overlap, nudge the actual block left/right
+
+function rotate
+- replace new block shape inside bounding box and place it into a tempholder
+- check if any block pixel overlaps another block or exceeds the side walls
+	* if yes, check wall-kick left/right
+		* if wall-kick makes the rotation valid, then rotate and execute wall-kick on the actual block
+	* if wall-kick fails, check floor-kick
+		* if floor-kick makes the rotation valid, then rotate and execute floor-kick on the actual block
+		* if floor-kick makes the rotation valid but the block has been floor-kicked before, rotate fails
+	* if both wall-kick and floor-kick fail, rotate fails
+
+function checkwallkick
+- gets argument with array of the bounding box and block
+- move bounding box and actual block 1 pixel left/right and place it into a tempholder
+- for each square in the tempholder, check if it'll overlap with an existing block or exceed the side walls
+	* if it succeeds, return true and an array with the successful location of the block
+	* if it overlaps, check the opposite side (left/right)
+	* if it overlaps again, wall-kick fails, and return false and an array with the original location of the block
+
+function checkfloorkick
+- gets argument with array of the bounding box and block
+- move bounding box and actual block 1 pixel up and place it into a tempholder
+- for each square in the tempholder, check if it'll overlap with an existing block
+	* if it succeeds, return true and an array with the successful location of the block
+	* if it overlaps, floor-kick fails, and return false and an array with the original location of the block
+
+function checklinesfilled
+- starting from either top or bottom, check if any rows are fully filled
+- if a row is filled, mark it
+- execute removelines with an argument of an array with filled rows
+
+function removelines
+- for all filled rows, blink them a few times with delay in between
+- starting from the bottom, for every filled row, cascade down all the rows above to replace that row
+- give the player points based on rows cleared
+
+function checkgameover
+- check if the current block sits higher than/equal to the highest row of the gameboard
+	* if yes, call GAME OVER
+
+function gameover
+- from the bottom up, turn each row grey with a slight delay in between
+- after a short delay, blackout gameboard, and display large GAME OVER text
