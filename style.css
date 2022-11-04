@@ -95,3 +95,56 @@ body {
   font-family: "Press Start 2P", cursive;
   font-size: 30px;
 }
+
+.game-over {
+  top: 17%;
+  left: 51.1%;
+  width: 18%;
+  padding-top: 14.6%;
+  background: url("assets/game-over.png");
+  background-size: cover;
+  position: absolute;
+}
+
+.reset {
+  top: 50%;
+  left: 51.9%;
+  width: 16.4%;
+  padding-top: 4.2%;
+  background: url("assets/reset.png");
+  background-size: cover;
+  position: absolute;
+  cursor: pointer;
+}
+
+.title {
+  top: 62%;
+  left: 51.9%;
+  width: 16.4%;
+  padding-top: 4.2%;
+  background: url("assets/title.png");
+  background-size: cover;
+  position: absolute;
+  cursor: pointer;
+}
+
+.logo {
+  top: 20%;
+  left: 51.9%;
+  width: 16.4%;
+  padding-top: 11.6%;
+  background: url("assets/logo.png");
+  background-size: cover;
+  position: absolute;
+}
+
+.play {
+  top: 60%;
+  left: 51.9%;
+  width: 16.4%;
+  padding-top: 5.7%;
+  background: url("assets/play.png");
+  background-size: cover;
+  position: absolute;
+  cursor: pointer;
+}

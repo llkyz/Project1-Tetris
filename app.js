@@ -199,6 +199,7 @@ speedTable = [
 
 let queue = [];
 let fallingFunc = "";
+let movementEnabled = 1;
 
 let currentBlock = {
   type: 0,
@@ -288,6 +289,12 @@ for (let y = 0; y < 2; y++) {
   }
 }
 
+$gameover = $("<div>").addClass("game-over");
+$reset = $("<div>").addClass("reset");
+$title = $("<div>").addClass("title");
+$logo = $("<div>").addClass("logo");
+$play = $("<div>").addClass("play");
+
 // ======================================
 // Administrative
 // ======================================
@@ -305,7 +312,6 @@ const createInitialQueue = () => {
 
 const previewNextBlock = () => {
   // Preview the upcoming block in the top left area
-  //console.log(queue[6]);
   let nextBlock = blocks[queue[6]][0];
   $(".preview-square").css("background-color", "").removeClass("preview-show");
 
@@ -347,15 +353,7 @@ const createBlock = () => {
   previewNextBlock();
   addBlockColours();
   fallingFunc = setInterval(falling, speed);
-  /*
-  if (checkAreaClear(currentBlock.array, 0, 0)) {
-    addBlockColours();
-    fallingFunc = setInterval(falling, 2000);
-  } else {
-    console.log("GAME OVER");
-    //game over
-  }
-  */
+  movementEnabled = 1;
 };
 
 const falling = () => {
@@ -370,7 +368,8 @@ const falling = () => {
     $(".currentBlock").css("background-color", "").removeClass("currentBlock");
     addBlockColours();
   } else {
-    //Fix block in place
+    // Fix block in place
+    movementEnabled = 0;
     for (let x = 0; x < currentBlock.array[0].length; x++) {
       for (let y = 0; y < currentBlock.array.length; y++) {
         if (currentBlock.array[y][x] == 1) {
@@ -382,10 +381,13 @@ const falling = () => {
     }
     clearInterval(fallingFunc);
     if (checkCeilingClear() == false) {
-      console.log("GAME OVER");
+      gameOver();
     } else {
-      checkFullRows();
-      createBlock();
+      if (checkFullRows()) {
+        setTimeout(createBlock, 1200);
+      } else {
+        createBlock();
+      }
     }
   }
 };
@@ -403,6 +405,183 @@ const addBlockColours = () => {
       }
     }
   }
+};
+
+const gameOver = () => {
+  $(".preview-square").removeClass("preview-show").css("background-color", "");
+
+  let counter = 30;
+  for (let y = 21; y > 1; y--) {
+    setTimeout(() => {
+      for (let x = 0; x < 10; x++) {
+        $(`#x${x}y${y}`)
+          .css("background", 'url("assets/tile-dead.png")')
+          .css("background-size", "cover")
+          .css("z-index", 2);
+      }
+    }, counter);
+    counter += 30;
+  }
+
+  setTimeout(() => {
+    $(".occupied").removeClass("occupied");
+  }, counter);
+
+  setTimeout(() => {
+    $(".board-container").append($gameover);
+    $(".board-container").append($reset);
+    $(".board-container").append($title);
+    $reset.on("click", () => {
+      $reset.off("click");
+      resetGame();
+    });
+    $title.on("click", () => {
+      $title.off("click");
+      backToTitle();
+    });
+  }, counter);
+
+  counter += 1500;
+
+  for (let y = 21; y > 1; y--) {
+    setTimeout(() => {
+      for (let x = 0; x < 10; x++) {
+        $(`#x${x}y${y}`).css("background", "").css("z-index", "");
+      }
+    }, counter);
+    counter += 30;
+  }
+};
+
+const resetGame = () => {
+  let counter = 30;
+  for (let y = 21; y > 1; y--) {
+    setTimeout(() => {
+      for (let x = 0; x < 10; x++) {
+        $(`#x${x}y${y}`)
+          .css("background", 'url("assets/tile-dead.png")')
+          .css("background-size", "cover")
+          .css("z-index", 2);
+      }
+    }, counter);
+    counter += 30;
+  }
+
+  setTimeout(() => {
+    $gameover.remove();
+    $reset.remove();
+    $title.remove();
+  }, counter);
+
+  counter += 1500;
+
+  setTimeout(() => {
+    score = 0;
+    level = 0;
+    lines = 0;
+    speed = (speedTable[level] / 60) * 1000;
+    $("#score").text(0);
+    $("#level").text(0);
+    $("#lines").text(0);
+  }, counter);
+
+  for (let y = 21; y > 1; y--) {
+    setTimeout(() => {
+      for (let x = 0; x < 10; x++) {
+        $(`#x${x}y${y}`).css("background", "").css("z-index", "");
+      }
+    }, counter);
+    counter += 30;
+  }
+
+  setTimeout(() => {
+    createInitialQueue();
+    createBlock();
+  }, counter);
+};
+
+const backToTitle = () => {
+  let counter = 30;
+  for (let y = 21; y > 1; y--) {
+    setTimeout(() => {
+      for (let x = 0; x < 10; x++) {
+        $(`#x${x}y${y}`)
+          .css("background", 'url("assets/tile-dead.png")')
+          .css("background-size", "cover")
+          .css("z-index", 2);
+      }
+    }, counter);
+    counter += 30;
+  }
+
+  setTimeout(() => {
+    $gameover.remove();
+    $reset.remove();
+    $title.remove();
+    showTitle();
+  }, counter);
+
+  counter += 1500;
+
+  setTimeout(() => {
+    score = 0;
+    level = 0;
+    lines = 0;
+    speed = (speedTable[level] / 60) * 1000;
+    $("#score").text(0);
+    $("#level").text(0);
+    $("#lines").text(0);
+  }, counter);
+
+  for (let y = 21; y > 1; y--) {
+    setTimeout(() => {
+      for (let x = 0; x < 10; x++) {
+        $(`#x${x}y${y}`).css("background", "").css("z-index", "");
+      }
+    }, counter);
+    counter += 30;
+  }
+};
+
+const showTitle = () => {
+  $(".board-container").append($logo);
+  $(".board-container").append($play);
+  $play.on("click", () => {
+    $logo.remove();
+    $play.remove();
+    createInitialQueue();
+    createBlock();
+  });
+};
+
+// ======================================
+// Row Clearing
+// ======================================
+
+const rowAnimation = (fullRows) => {
+  const setWhite = () => {
+    for (let y of fullRows) {
+      for (let x = 0; x < 10; x++) {
+        $(`#x${x}y${y}`).css("background-color", "rgb(255,255,255)");
+      }
+    }
+  };
+  const setGrey = () => {
+    for (let y of fullRows) {
+      for (let x = 0; x < 10; x++) {
+        $(`#x${x}y${y}`).css("background-color", "rgb(30,30,30)");
+      }
+    }
+  };
+
+  setWhite();
+  setTimeout(setGrey, 150);
+  setTimeout(setWhite, 300);
+  setTimeout(setGrey, 450);
+  setTimeout(setWhite, 600);
+  setTimeout(setGrey, 750);
+  setTimeout(setWhite, 900);
+  setTimeout(setGrey, 1050);
 };
 
 const checkFullRows = () => {
@@ -429,12 +608,17 @@ const checkFullRows = () => {
     } else if (fullRows.length === 4) {
       score += 1200;
     }
-    lines += fullRows.length;
-    $("#score").text(score);
-    $("#lines").text(lines);
-    checkLevel();
-    removeFullRows(fullRows);
+    rowAnimation(fullRows);
+    setTimeout(() => {
+      lines += fullRows.length;
+      $("#score").text(score);
+      $("#lines").text(lines);
+      checkLevel();
+      removeFullRows(fullRows);
+    }, 1200);
+    return true;
   }
+  return false;
 };
 
 const removeFullRows = (rowArray) => {
@@ -445,17 +629,14 @@ const removeFullRows = (rowArray) => {
     }
     for (let y2 = y - 1; y2 >= 0; y2--) {
       for (let x2 = 0; x2 < 10; x2++) {
-        //console.log(`checking #x${x2}y${y2}`);
         if ($(`#x${x2}y${y2}`).hasClass("occupied")) {
           let tempColor = $(`#x${x2}y${y2}`).css("background-color");
-          //console.log(tempColor);
           $(`#x${x2}y${y2}`)
             .removeClass("occupied")
             .css("background-color", "");
           $(`#x${x2}y${y2 + 1}`)
             .addClass("occupied")
             .css("background-color", tempColor);
-          //console.log(`Remove from #x${x2}y${y2}, add to #x${x2}y${y2 + 1}`);
         }
       }
     }
@@ -517,8 +698,6 @@ const rotate = () => {
         .css("background-color", "")
         .removeClass("currentBlock");
       addBlockColours();
-    } else {
-      console.log("rotate failed.");
     }
   }
 };
@@ -593,7 +772,6 @@ const checkAreaClear = (testingArray, offsetX, offsetY) => {
               }`
             ).hasClass("occupied")
           ) {
-            //console.log(`block x${currentBlock.position[0] + x}y${currentBlock.position[1] + y} is occupied`);
             return false;
           }
         }
@@ -648,22 +826,24 @@ const checkCeilingClear = () => {
 };
 
 // ======================================
-// Keypress Listeners
+// Keypress / Button Listeners
 // ======================================
 
 $(document).keydown(function (e) {
-  if (e.which === 37) {
-    // Left
-    nudgeLeft();
-  } else if (e.which === 39) {
-    // Right
-    nudgeRight();
-  } else if (e.which === 40) {
-    // Down
-    falling();
-  } else if (e.which === 38) {
-    // Up
-    rotate();
+  if (movementEnabled === 1) {
+    if (e.which === 37) {
+      // Left
+      nudgeLeft();
+    } else if (e.which === 39) {
+      // Right
+      nudgeRight();
+    } else if (e.which === 40) {
+      // Down
+      falling();
+    } else if (e.which === 38) {
+      // Up
+      rotate();
+    }
   }
 });
 
@@ -671,10 +851,4 @@ $(document).keydown(function (e) {
 // Execute when user loads game
 // ======================================
 
-createInitialQueue();
-
-$("#x0y0").on("click", () => {
-  createBlock();
-});
-
-//$("#x4y9").addClass("occupied");
+showTitle();
