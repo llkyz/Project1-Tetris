@@ -168,6 +168,16 @@ blocks[6] = [
   ],
 ];
 
+blockColour = [
+  { R: 0, G: 230, B: 254 },
+  { R: 24, G: 1, B: 255 },
+  { R: 255, G: 115, B: 8 },
+  { R: 255, G: 222, B: 0 },
+  { R: 102, G: 253, B: 0 },
+  { R: 184, G: 2, B: 253 },
+  { R: 254, G: 16, B: 60 },
+];
+
 /*
 Block 0: Long block
 Block 1: J block
@@ -182,6 +192,11 @@ Format
 block[2][3] = L block, 4th rotation position
 */
 
+speedTable = [
+  53, 49, 45, 41, 37, 33, 28, 22, 17, 11, 10, 9, 8, 7, 6, 6, 5, 5, 5, 4, 4, 4,
+  4, 4, 4, 4, 4, 4, 4, 4, 3,
+];
+
 let queue = [];
 let fallingFunc = "";
 
@@ -191,22 +206,87 @@ let currentBlock = {
   array: [],
   position: [0, 0], // indicates top left corner of bounding box [x,y]
   floorkickCount: 0,
+  colour: {},
 };
 
-$("body").append($("<div>").css("padding-top", "4%"));
+let score = 0;
+let level = 0;
+let lines = 0;
+let speed = (speedTable[level] / 60) * 1000;
+// frames per grid movement / frames per second * 1000 ms
 
+// ======================================
+// Draw the Gameboard and side bars
+// ======================================
+
+$middle = $("<div>").addClass("middle-container");
+$sidebar = $("<div>").addClass("sidebar-left");
+$nextBlock = $("<div>").addClass("next-block");
+$sidebar.append($nextBlock);
+
+// Create sidebar's next block preview
+for (let y = 0; y < 3; y++) {
+  const $preview = $("<div>")
+    .addClass("preview-row")
+    .attr("id", `previewRow${y}`);
+  for (let x = 0; x < 4; x++) {
+    const $square = $("<pixel>")
+      .addClass("preview-square")
+      .attr("id", `preview-x${x}y${y}`);
+    $preview.append($square);
+  }
+  $nextBlock.append($preview);
+}
+
+$score = $("<div>")
+  .addClass("stats")
+  .attr("id", "score")
+  .css("margin-top", "28%")
+  .text("0");
+$level = $("<div>")
+  .addClass("stats")
+  .attr("id", "level")
+  .css("margin-top", "24%")
+  .text("0");
+$lines = $("<div>")
+  .addClass("stats")
+  .attr("id", "lines")
+  .css("margin-top", "27%")
+  .text("0");
+$sidebar.append($score);
+$sidebar.append($level);
+$sidebar.append($lines);
+
+$middle.append($sidebar);
+
+$middle.append($("<div>").addClass("vertical-bar"));
+$middle.append($("<div>").addClass("board-container"));
+$("body").append($middle);
+
+$(".board-container").append(
+  $("<div>").addClass("horizontal-bar").css("transform", "scaleY(-1)")
+);
+
+// Create game board
 for (let y = 0; y < 22; y++) {
   const $gameboard = $("<row>").addClass("game-board").attr("id", `row${y}`);
   for (let x = 0; x < 10; x++) {
     const $square = $("<pixel>").addClass("square").attr("id", `x${x}y${y}`);
     $gameboard.append($square);
   }
-  $("body").append($gameboard);
+  $(".board-container").append($gameboard);
 }
+$(".board-container").append($("<div>").addClass("horizontal-bar"));
+$middle.append($("<div>").addClass("vertical-bar2"));
 
-const changePixelColour = (x, y) => {
-  $(`#x${x}y${y}`).css("background-color", "black");
-};
+// Cover the deadzone
+for (let y = 0; y < 2; y++) {
+  for (let x = 0; x < 10; x++) {
+    $(`#x${x}y${y}`)
+      .css("background", 'url("assets/tile-dead.png")')
+      .css("background-size", "cover");
+  }
+}
 
 // ======================================
 // Administrative
@@ -224,19 +304,50 @@ const createInitialQueue = () => {
 };
 
 const previewNextBlock = () => {
-  //preview the upcoming block in the top left area
-  console.log(queue[6]);
+  // Preview the upcoming block in the top left area
+  //console.log(queue[6]);
+  let nextBlock = blocks[queue[6]][0];
+  $(".preview-square").css("background-color", "").removeClass("preview-show");
+
+  for (let x = 0; x < nextBlock[0].length; x++) {
+    for (let y = 0; y < nextBlock.length; y++) {
+      if (nextBlock[y][x] == 1) {
+        if (nextBlock.length === 2) {
+          $(`#preview-x${x + 1}y${y}`).addClass("preview-show");
+          $(`#preview-x${x + 1}y${y}`).css(
+            "background-color",
+            `rgb(${blockColour[queue[6]].R},${blockColour[queue[6]].G},${
+              blockColour[queue[6]].B
+            })`
+          );
+        } else {
+          $(`#preview-x${x}y${y}`).addClass("preview-show");
+          $(`#preview-x${x}y${y}`).css(
+            "background-color",
+            `rgb(${blockColour[queue[6]].R},${blockColour[queue[6]].G},${
+              blockColour[queue[6]].B
+            })`
+          );
+        }
+      }
+    }
+  }
 };
 
 const createBlock = () => {
+  // Generates a new block at the top.
+  // If the space is already occupied, game over
   currentBlock.type = queue.pop();
   currentBlock.rotation = 0;
   currentBlock.array = blocks[currentBlock.type][currentBlock.rotation];
   queue.unshift(Math.floor(Math.random() * 7));
   currentBlock.position = [3, 0];
-
-  //console.log(currentBlock.array);
+  currentBlock.floorkickCount = 0;
+  currentBlock.colour = blockColour[currentBlock.type];
   previewNextBlock();
+  addBlockColours();
+  fallingFunc = setInterval(falling, speed);
+  /*
   if (checkAreaClear(currentBlock.array, 0, 0)) {
     addBlockColours();
     fallingFunc = setInterval(falling, 2000);
@@ -244,18 +355,22 @@ const createBlock = () => {
     console.log("GAME OVER");
     //game over
   }
+  */
 };
 
 const falling = () => {
+  // Attempt to move the block 1 pixel down and check conditions
+  // If all pass, move the block down 1 pixel
+  // Otherwise, fix the block in place
   if (
     checkAreaClear(currentBlock.array, 0, 1) &&
     checkFloorClear(currentBlock.array, 1)
   ) {
     currentBlock.position[1] += 1;
-    $(".currentBlock").removeClass("currentBlock");
+    $(".currentBlock").css("background-color", "").removeClass("currentBlock");
     addBlockColours();
   } else {
-    //fix block in place
+    //Fix block in place
     for (let x = 0; x < currentBlock.array[0].length; x++) {
       for (let y = 0; y < currentBlock.array.length; y++) {
         if (currentBlock.array[y][x] == 1) {
@@ -266,8 +381,12 @@ const falling = () => {
       }
     }
     clearInterval(fallingFunc);
-    checkFullRows();
-    createBlock();
+    if (checkCeilingClear() == false) {
+      console.log("GAME OVER");
+    } else {
+      checkFullRows();
+      createBlock();
+    }
   }
 };
 
@@ -275,15 +394,19 @@ const addBlockColours = () => {
   for (let x = 0; x < currentBlock.array[0].length; x++) {
     for (let y = 0; y < currentBlock.array.length; y++) {
       if (currentBlock.array[y][x] == 1) {
-        $(
-          `#x${currentBlock.position[0] + x}y${currentBlock.position[1] + y}`
-        ).addClass("currentBlock");
+        $(`#x${currentBlock.position[0] + x}y${currentBlock.position[1] + y}`)
+          .addClass("currentBlock")
+          .css(
+            "background-color",
+            `rgb(${currentBlock.colour.R},${currentBlock.colour.G},${currentBlock.colour.B})`
+          );
       }
     }
   }
 };
 
 const checkFullRows = () => {
+  // See if any row is full. If so, put their Y coordinate in an array
   let fullRows = [];
   for (let y = 0; y < 22; y++) {
     let pixelCount = 0;
@@ -297,27 +420,53 @@ const checkFullRows = () => {
     }
   }
   if (fullRows.length > 0) {
-    console.log("Removing full rows");
-    console.log(fullRows);
+    if (fullRows.length === 1) {
+      score += 40;
+    } else if (fullRows.length === 2) {
+      score += 100;
+    } else if (fullRows.length === 3) {
+      score += 300;
+    } else if (fullRows.length === 4) {
+      score += 1200;
+    }
+    lines += fullRows.length;
+    $("#score").text(score);
+    $("#lines").text(lines);
+    checkLevel();
     removeFullRows(fullRows);
   }
 };
 
 const removeFullRows = (rowArray) => {
+  // For every full row, unoccupy every cell and move all the blocks above them 1 pixel down
   for (let y of rowArray) {
     for (let x = 0; x < 10; x++) {
-      $(`#x${x}y${y}`).removeClass("occupied");
+      $(`#x${x}y${y}`).removeClass("occupied").css("background-color", "");
     }
     for (let y2 = y - 1; y2 >= 0; y2--) {
       for (let x2 = 0; x2 < 10; x2++) {
-        console.log(`checking #x${x2}y${y2}`);
+        //console.log(`checking #x${x2}y${y2}`);
         if ($(`#x${x2}y${y2}`).hasClass("occupied")) {
-          $(`#x${x2}y${y2}`).removeClass("occupied");
-          $(`#x${x2}y${y2 + 1}`).addClass("occupied");
-          console.log(`Remove from #x${x2}y${y2}, add to #x${x2}y${y2 + 1}`);
+          let tempColor = $(`#x${x2}y${y2}`).css("background-color");
+          //console.log(tempColor);
+          $(`#x${x2}y${y2}`)
+            .removeClass("occupied")
+            .css("background-color", "");
+          $(`#x${x2}y${y2 + 1}`)
+            .addClass("occupied")
+            .css("background-color", tempColor);
+          //console.log(`Remove from #x${x2}y${y2}, add to #x${x2}y${y2 + 1}`);
         }
       }
     }
+  }
+};
+
+const checkLevel = () => {
+  if (lines < 309) {
+    level = Math.floor(lines / 10);
+    speed = (speedTable[level] / 60) * 1000;
+    $("#level").text(level);
   }
 };
 
@@ -326,6 +475,7 @@ const removeFullRows = (rowArray) => {
 // ======================================
 
 const rotate = () => {
+  // Rotate the block 90 degrees, then check all conditions
   let tempRotation = 0;
   if (currentBlock.rotation !== 3) {
     tempRotation = currentBlock.rotation + 1;
@@ -339,30 +489,33 @@ const rotate = () => {
   if (areaClearResults && wallClearResults && floorClearResults) {
     currentBlock.rotation = tempRotation;
     currentBlock.array = tempArray;
-    $(".currentBlock").removeClass("currentBlock");
+    $(".currentBlock").css("background-color", "").removeClass("currentBlock");
     addBlockColours();
   } else if (wallClearResults === false) {
-    console.log("checking wallkick");
+    // Check if wallkick is possible
     let wallkickResults = wallkick(tempArray);
     if (
       wallkickResults[0] &&
       checkAreaClear(tempArray, wallkickResults[1], 0)
     ) {
-      console.log("executing wallkick");
       currentBlock.position[0] += wallkickResults[1];
       currentBlock.rotation = tempRotation;
       currentBlock.array = tempArray;
-      $(".currentBlock").removeClass("currentBlock");
+      $(".currentBlock")
+        .css("background-color", "")
+        .removeClass("currentBlock");
       addBlockColours();
     }
   } else if (areaClearResults === false || floorClearResults === false) {
-    console.log("checking floorkick");
-    if (floorkick(tempArray)) {
-      console.log("executing floorkick");
+    // Check if floorkick is possible
+    if (floorkick(tempArray) && currentBlock.floorkickCount === 0) {
       currentBlock.position[1] -= 1;
       currentBlock.rotation = tempRotation;
       currentBlock.array = tempArray;
-      $(".currentBlock").removeClass("currentBlock");
+      currentBlock.floorkickCount += 1;
+      $(".currentBlock")
+        .css("background-color", "")
+        .removeClass("currentBlock");
       addBlockColours();
     } else {
       console.log("rotate failed.");
@@ -371,23 +524,25 @@ const rotate = () => {
 };
 
 const nudgeLeft = () => {
+  // If area and wall checks are clear, move the block 1 pixel left
   if (
     checkAreaClear(currentBlock.array, -1, 0) &&
     checkWallClear(currentBlock.array, -1, 0)
   ) {
     currentBlock.position[0] -= 1;
-    $(".currentBlock").removeClass("currentBlock");
+    $(".currentBlock").css("background-color", "").removeClass("currentBlock");
     addBlockColours();
   }
 };
 
 const nudgeRight = () => {
+  // If area and wall checks are clear, move the block 1 pixel right
   if (
     checkAreaClear(currentBlock.array, 1, 0) &&
     checkWallClear(currentBlock.array, 1, 0)
   ) {
     currentBlock.position[0] += 1;
-    $(".currentBlock").removeClass("currentBlock");
+    $(".currentBlock").css("background-color", "").removeClass("currentBlock");
     addBlockColours();
   }
 };
@@ -397,6 +552,7 @@ const nudgeRight = () => {
 // ======================================
 
 const wallkick = (tempArray) => {
+  // Shift block 1 pixel right and test, then shift 1 pixel left and test
   if (checkWallClear(tempArray, 1)) {
     return [true, 1];
   } else if (checkWallClear(tempArray, -1)) {
@@ -407,6 +563,7 @@ const wallkick = (tempArray) => {
 };
 
 const floorkick = (tempArray) => {
+  // Shift block 1 pixel up and test
   if (
     checkWallClear(tempArray, 0) &&
     checkAreaClear(tempArray, 0, -1) &&
@@ -423,11 +580,12 @@ const floorkick = (tempArray) => {
 // ======================================
 
 const checkAreaClear = (testingArray, offsetX, offsetY) => {
-  //don't check bounding box, only block pixels
+  //Check if the area the block will be is occupied
   try {
     for (let x = 0; x < testingArray[0].length; x++) {
       for (let y = 0; y < testingArray.length; y++) {
         if (testingArray[y][x] == 1) {
+          //Don't check bounding box, only block pixels
           if (
             $(
               `#x${currentBlock.position[0] + x + offsetX}y${
@@ -435,11 +593,7 @@ const checkAreaClear = (testingArray, offsetX, offsetY) => {
               }`
             ).hasClass("occupied")
           ) {
-            console.log(
-              `block x${currentBlock.position[0] + x}y${
-                currentBlock.position[1] + y
-              } is occupied`
-            );
+            //console.log(`block x${currentBlock.position[0] + x}y${currentBlock.position[1] + y} is occupied`);
             return false;
           }
         }
@@ -452,6 +606,7 @@ const checkAreaClear = (testingArray, offsetX, offsetY) => {
 };
 
 const checkWallClear = (testingArray, offsetX) => {
+  //Check if the block will exceed the wall limits
   for (let x = 0; x < testingArray[0].length; x++) {
     for (let y = 0; y < testingArray.length; y++) {
       if (testingArray[y][x] == 1) {
@@ -468,6 +623,7 @@ const checkWallClear = (testingArray, offsetX) => {
 };
 
 const checkFloorClear = (testingArray, offsetY) => {
+  //Check if the block will go beyond the floor
   for (let x = 0; x < testingArray[0].length; x++) {
     for (let y = 0; y < testingArray.length; y++) {
       if (testingArray[y][x] == 1) {
@@ -480,18 +636,33 @@ const checkFloorClear = (testingArray, offsetY) => {
   return true;
 };
 
+const checkCeilingClear = () => {
+  for (let y = 0; y < 2; y++) {
+    for (let x = 0; x < 10; x++) {
+      if ($(`#x${x}y${y}`).hasClass("occupied")) {
+        return false;
+      }
+    }
+  }
+  return true;
+};
+
 // ======================================
 // Keypress Listeners
 // ======================================
 
 $(document).keydown(function (e) {
   if (e.which === 37) {
+    // Left
     nudgeLeft();
   } else if (e.which === 39) {
+    // Right
     nudgeRight();
   } else if (e.which === 40) {
+    // Down
     falling();
   } else if (e.which === 38) {
+    // Up
     rotate();
   }
 });
