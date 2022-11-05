@@ -260,13 +260,9 @@ $sidebar.append($lines);
 
 $middle.append($sidebar);
 
-$middle.append($("<div>").addClass("vertical-bar"));
+$middle.append($("<div>").addClass("game-border"));
 $middle.append($("<div>").addClass("board-container"));
 $("body").append($middle);
-
-$(".board-container").append(
-  $("<div>").addClass("horizontal-bar").css("transform", "scaleY(-1)")
-);
 
 // Create game board
 for (let y = 0; y < 22; y++) {
@@ -277,8 +273,6 @@ for (let y = 0; y < 22; y++) {
   }
   $(".board-container").append($gameboard);
 }
-$(".board-container").append($("<div>").addClass("horizontal-bar"));
-$middle.append($("<div>").addClass("vertical-bar2"));
 
 // Cover the deadzone
 for (let y = 0; y < 2; y++) {

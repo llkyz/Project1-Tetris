@@ -2,15 +2,6 @@ body {
   overflow: hidden;
 }
 
-.horizontal-bar {
-  width: 100%;
-  padding-top: 10%;
-  background-color: black;
-  margin: 0 auto;
-  background: url("assets/horizontal-bar.png");
-  background-size: cover;
-}
-
 .middle-container {
   display: flex;
   justify-content: center;
@@ -22,30 +13,25 @@ body {
   background-size: cover;
 }
 
-.vertical-bar {
-  width: 1.7%;
-  padding-top: 10%;
-  background-color: black;
-  background: url("assets/vertical-bar.png");
-  background-size: cover;
-}
-
-.vertical-bar2 {
-  width: 1.7%;
-  padding-top: 10%;
-  background-color: black;
-  background: url("assets/vertical-bar2.png");
-  background-size: cover;
-}
-
 .board-container {
   width: 20%;
+  margin: 2% 1.7%;
 }
 
 .game-board {
   display: flex;
   justify-content: center;
   margin: 0 auto;
+}
+
+.game-border {
+  left: 48.55%;
+  width: 23.2%;
+  padding-top: 47.6%;
+  background: url("assets/gameboard.png");
+  background-size: 100% 100%;
+  position: absolute;
+  z-index: -1;
 }
 
 .square {
