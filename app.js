@@ -1,3 +1,28 @@
+// Music / Sound Effects from:
+// https://www.zophar.net/music/gameboy-gbs/tetris
+// https://www.sounds-resource.com/game_boy_gbc/tetris/sound/45758/
+const soundBgm = new Audio("assets/sounds/korobeiniki.mp3");
+const soundMenu = new Audio("assets/sounds/Tetris (GB) (17)-menu_sound.wav");
+const soundMove = new Audio("assets/sounds/Tetris (GB) (18)-move_piece.wav");
+const soundRotate = new Audio(
+  "assets/sounds/Tetris (GB) (19)-rotate_piece.wav"
+);
+const soundClear = new Audio("assets/sounds/Tetris (GB) (21)-line_clear.wav");
+const sound4Clear = new Audio(
+  "assets/sounds/Tetris (GB) (22)-tetris_4_lines.wav"
+);
+const soundLevelUp = new Audio(
+  "assets/sounds/Tetris (GB) (23)-level_up_jingle (V1.1).wav"
+);
+const soundGameOver1 = new Audio(
+  "assets/sounds/Tetris (GB) (25)-game_over.wav"
+);
+const soundGameOver2 = new Audio("assets/sounds/08 Game Over.mp3");
+const soundLanded = new Audio(
+  "assets/sounds/Tetris (GB) (27)-piece_landed.wav"
+);
+soundBgm.loop = true;
+
 const blocks = [];
 
 blocks[0] = [
@@ -264,6 +289,8 @@ $middle.append($("<div>").addClass("game-border"));
 $middle.append($("<div>").addClass("board-container"));
 $("body").append($middle);
 
+$(".board-container").append($("<div>").addClass("dead-zone"));
+
 // Create game board
 for (let y = 0; y < 22; y++) {
   const $gameboard = $("<row>").addClass("game-board").attr("id", `row${y}`);
@@ -272,15 +299,6 @@ for (let y = 0; y < 22; y++) {
     $gameboard.append($square);
   }
   $(".board-container").append($gameboard);
-}
-
-// Cover the deadzone
-for (let y = 0; y < 2; y++) {
-  for (let x = 0; x < 10; x++) {
-    $(`#x${x}y${y}`)
-      .css("background", 'url("assets/tile-dead.png")')
-      .css("background-size", "cover");
-  }
 }
 
 $gameover = $("<div>").addClass("game-over");
@@ -364,23 +382,31 @@ const falling = () => {
   } else {
     // Fix block in place
     movementEnabled = 0;
+    clearInterval(fallingFunc);
+    clearInterval(movementFunc);
+    movementFunc = "";
     for (let x = 0; x < currentBlock.array[0].length; x++) {
       for (let y = 0; y < currentBlock.array.length; y++) {
         if (currentBlock.array[y][x] == 1) {
           $(`#x${currentBlock.position[0] + x}y${currentBlock.position[1] + y}`)
             .removeClass("currentBlock")
             .addClass("occupied");
+          soundLanded.play();
         }
       }
     }
-    clearInterval(fallingFunc);
     if (checkCeilingClear() == false) {
+      inputEnabled = 0;
       gameOver();
     } else {
       if (checkFullRows()) {
-        setTimeout(createBlock, 1200);
+        setTimeout(() => {
+          createBlock();
+          inputEnabled = 1;
+        }, 1200);
       } else {
         createBlock();
+        inputEnabled = 1;
       }
     }
   }
@@ -402,6 +428,8 @@ const addBlockColours = () => {
 };
 
 const gameOver = () => {
+  soundBgm.pause();
+  soundGameOver1.play();
   $(".preview-square").removeClass("preview-show").css("background-color", "");
 
   let counter = 30;
@@ -419,24 +447,25 @@ const gameOver = () => {
 
   setTimeout(() => {
     $(".occupied").removeClass("occupied");
-  }, counter);
-
-  setTimeout(() => {
     $(".board-container").append($gameover);
     $(".board-container").append($reset);
     $(".board-container").append($title);
     $reset.on("click", () => {
       $reset.off("click");
+      soundMenu.play();
       resetGame();
     });
     $title.on("click", () => {
       $title.off("click");
+      soundMenu.play();
       backToTitle();
     });
   }, counter);
 
   counter += 1500;
-
+  setTimeout(() => {
+    soundGameOver2.play();
+  }, counter);
   for (let y = 21; y > 1; y--) {
     setTimeout(() => {
       for (let x = 0; x < 10; x++) {
@@ -491,6 +520,9 @@ const resetGame = () => {
   setTimeout(() => {
     createInitialQueue();
     createBlock();
+    soundBgm.currentTime = 0;
+    soundBgm.play();
+    inputEnabled = 1;
   }, counter);
 };
 
@@ -545,12 +577,56 @@ const showTitle = () => {
     $play.remove();
     createInitialQueue();
     createBlock();
+    soundBgm.currentTime = 0;
+    soundBgm.play();
+    inputEnabled = 1;
   });
 };
 
 // ======================================
 // Row Clearing
 // ======================================
+
+const checkFullRows = () => {
+  // See if any row is full. If so, put their Y coordinate in an array
+  let fullRows = [];
+  for (let y = 0; y < 22; y++) {
+    let pixelCount = 0;
+    for (let x = 0; x < 10; x++) {
+      if ($(`#x${x}y${y}`).hasClass("occupied")) {
+        pixelCount += 1;
+      }
+    }
+    if (pixelCount === 10) {
+      fullRows.push(y);
+    }
+  }
+  if (fullRows.length > 0) {
+    if (fullRows.length === 4) {
+      sound4Clear.play();
+      score += 1200;
+    } else {
+      soundClear.play();
+      if (fullRows.length === 1) {
+        score += 40;
+      } else if (fullRows.length === 2) {
+        score += 100;
+      } else if (fullRows.length === 3) {
+        score += 300;
+      }
+    }
+    rowAnimation(fullRows);
+    setTimeout(() => {
+      lines += fullRows.length;
+      $("#score").text(score);
+      $("#lines").text(lines);
+      checkLevel();
+      removeFullRows(fullRows);
+    }, 1200);
+    return true;
+  }
+  return false;
+};
 
 const rowAnimation = (fullRows) => {
   const setWhite = () => {
@@ -578,43 +654,6 @@ const rowAnimation = (fullRows) => {
   setTimeout(setGrey, 1050);
 };
 
-const checkFullRows = () => {
-  // See if any row is full. If so, put their Y coordinate in an array
-  let fullRows = [];
-  for (let y = 0; y < 22; y++) {
-    let pixelCount = 0;
-    for (let x = 0; x < 10; x++) {
-      if ($(`#x${x}y${y}`).hasClass("occupied")) {
-        pixelCount += 1;
-      }
-    }
-    if (pixelCount === 10) {
-      fullRows.push(y);
-    }
-  }
-  if (fullRows.length > 0) {
-    if (fullRows.length === 1) {
-      score += 40;
-    } else if (fullRows.length === 2) {
-      score += 100;
-    } else if (fullRows.length === 3) {
-      score += 300;
-    } else if (fullRows.length === 4) {
-      score += 1200;
-    }
-    rowAnimation(fullRows);
-    setTimeout(() => {
-      lines += fullRows.length;
-      $("#score").text(score);
-      $("#lines").text(lines);
-      checkLevel();
-      removeFullRows(fullRows);
-    }, 1200);
-    return true;
-  }
-  return false;
-};
-
 const removeFullRows = (rowArray) => {
   // For every full row, unoccupy every cell and move all the blocks above them 1 pixel down
   for (let y of rowArray) {
@@ -639,9 +678,12 @@ const removeFullRows = (rowArray) => {
 
 const checkLevel = () => {
   if (lines < 309) {
-    level = Math.floor(lines / 10);
-    speed = (speedTable[level] / 60) * 1000;
-    $("#level").text(level);
+    if (Math.floor(lines / 10) !== level) {
+      soundLevelUp.play();
+      level = Math.floor(lines / 10);
+      speed = (speedTable[level] / 60) * 1000;
+      $("#level").text(level);
+    }
   }
 };
 
@@ -666,6 +708,7 @@ const rotate = () => {
     currentBlock.array = tempArray;
     $(".currentBlock").css("background-color", "").removeClass("currentBlock");
     addBlockColours();
+    soundRotate.play();
   } else if (wallClearResults === false) {
     // Check if wallkick is possible
     let wallkickResults = wallkick(tempArray);
@@ -680,6 +723,7 @@ const rotate = () => {
         .css("background-color", "")
         .removeClass("currentBlock");
       addBlockColours();
+      soundRotate.play();
     }
   } else if (areaClearResults === false || floorClearResults === false) {
     // Check if floorkick is possible
@@ -692,6 +736,7 @@ const rotate = () => {
         .css("background-color", "")
         .removeClass("currentBlock");
       addBlockColours();
+      soundRotate.play();
     }
   }
 };
@@ -705,6 +750,7 @@ const nudgeLeft = () => {
     currentBlock.position[0] -= 1;
     $(".currentBlock").css("background-color", "").removeClass("currentBlock");
     addBlockColours();
+    return true;
   }
 };
 
@@ -717,6 +763,7 @@ const nudgeRight = () => {
     currentBlock.position[0] += 1;
     $(".currentBlock").css("background-color", "").removeClass("currentBlock");
     addBlockColours();
+    return true;
   }
 };
 
@@ -822,21 +869,48 @@ const checkCeilingClear = () => {
 // ======================================
 // Keypress / Button Listeners
 // ======================================
+let inputEnabled = 0;
+let movementFunc = "";
 
 $(document).keydown(function (e) {
-  if (movementEnabled === 1) {
+  if (movementEnabled === 1 && inputEnabled === 1) {
     if (e.which === 37) {
       // Left
-      nudgeLeft();
+      inputEnabled = 0;
+      if (nudgeLeft()) {
+        soundMove.play();
+      }
+      movementFunc = setInterval(nudgeLeft, 100);
     } else if (e.which === 39) {
       // Right
-      nudgeRight();
+      inputEnabled = 0;
+      if (nudgeRight()) {
+        soundMove.play();
+      }
+      movementFunc = setInterval(nudgeRight, 100);
     } else if (e.which === 40) {
       // Down
+      inputEnabled = 0;
+      clearInterval(fallingFunc);
       falling();
+      movementFunc = setInterval(falling, 100);
     } else if (e.which === 38) {
       // Up
-      rotate();
+      console.log(e.repeat);
+      if (e.repeat === false) {
+        rotate();
+      }
+    }
+  }
+});
+
+$(document).keyup(function (e) {
+  if (movementFunc !== "") {
+    clearInterval(movementFunc);
+    inputEnabled = 1;
+    movementFunc = "";
+    if (e.which === 40) {
+      fallingFunc = setInterval(falling, speed);
     }
   }
 });

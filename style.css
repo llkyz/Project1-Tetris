@@ -24,6 +24,15 @@ body {
   margin: 0 auto;
 }
 
+.dead-zone {
+  width: 19.8%;
+  padding-top: 4%;
+  background: url("assets/tile-dead2.png");
+  background-size: 100% 100%;
+  position: absolute;
+  margin: 0;
+}
+
 .game-border {
   left: 48.55%;
   width: 23.2%;
