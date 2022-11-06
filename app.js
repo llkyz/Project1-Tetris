@@ -433,17 +433,7 @@ const gameOver = () => {
   $(".preview-square").removeClass("preview-show").css("background-color", "");
 
   let counter = 30;
-  for (let y = 21; y > 1; y--) {
-    setTimeout(() => {
-      for (let x = 0; x < 10; x++) {
-        $(`#x${x}y${y}`)
-          .css("background", 'url("assets/tile-dead.png")')
-          .css("background-size", "cover")
-          .css("z-index", 2);
-      }
-    }, counter);
-    counter += 30;
-  }
+  counter = transitionFill(counter);
 
   setTimeout(() => {
     $(".occupied").removeClass("occupied");
@@ -466,29 +456,12 @@ const gameOver = () => {
   setTimeout(() => {
     soundGameOver2.play();
   }, counter);
-  for (let y = 21; y > 1; y--) {
-    setTimeout(() => {
-      for (let x = 0; x < 10; x++) {
-        $(`#x${x}y${y}`).css("background", "").css("z-index", "");
-      }
-    }, counter);
-    counter += 30;
-  }
+  transitionClear(counter);
 };
 
 const resetGame = () => {
   let counter = 30;
-  for (let y = 21; y > 1; y--) {
-    setTimeout(() => {
-      for (let x = 0; x < 10; x++) {
-        $(`#x${x}y${y}`)
-          .css("background", 'url("assets/tile-dead.png")')
-          .css("background-size", "cover")
-          .css("z-index", 2);
-      }
-    }, counter);
-    counter += 30;
-  }
+  counter = transitionFill(counter);
 
   setTimeout(() => {
     $gameover.remove();
@@ -508,31 +481,14 @@ const resetGame = () => {
     $("#lines").text(0);
   }, counter);
 
-  for (let y = 21; y > 1; y--) {
-    setTimeout(() => {
-      for (let x = 0; x < 10; x++) {
-        $(`#x${x}y${y}`).css("background", "").css("z-index", "");
-      }
-    }, counter);
-    counter += 30;
-  }
+  counter = transitionClear(counter);
 
   setTimeout(playGame, counter);
 };
 
 const backToTitle = () => {
   let counter = 30;
-  for (let y = 21; y > 1; y--) {
-    setTimeout(() => {
-      for (let x = 0; x < 10; x++) {
-        $(`#x${x}y${y}`)
-          .css("background", 'url("assets/tile-dead.png")')
-          .css("background-size", "cover")
-          .css("z-index", 2);
-      }
-    }, counter);
-    counter += 30;
-  }
+  counter = transitionFill(counter);
 
   setTimeout(() => {
     $gameover.remove();
@@ -553,6 +509,25 @@ const backToTitle = () => {
     $("#lines").text(0);
   }, counter);
 
+  transitionClear(counter);
+};
+
+const transitionFill = (counter) => {
+  for (let y = 21; y > 1; y--) {
+    setTimeout(() => {
+      for (let x = 0; x < 10; x++) {
+        $(`#x${x}y${y}`)
+          .css("background", 'url("assets/tile-dead.png")')
+          .css("background-size", "cover")
+          .css("z-index", 2);
+      }
+    }, counter);
+    counter += 30;
+  }
+  return counter;
+};
+
+const transitionClear = (counter) => {
   for (let y = 21; y > 1; y--) {
     setTimeout(() => {
       for (let x = 0; x < 10; x++) {
@@ -561,6 +536,7 @@ const backToTitle = () => {
     }, counter);
     counter += 30;
   }
+  return counter;
 };
 
 const showTitle = () => {
