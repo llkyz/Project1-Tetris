@@ -871,7 +871,6 @@ const checkCeilingClear = () => {
 // ======================================
 let inputEnabled = 0;
 let shiftEnabled = 0;
-let softDropSpeed = 75;
 
 $(document).keydown(function (e) {
   if (movementEnabled === 1 && inputEnabled === 1) {
@@ -893,12 +892,7 @@ $(document).keydown(function (e) {
           fallingFunc = setInterval(falling, 1);
         } else {
           falling();
-          if (speed < 75) {
-            softDropSpeed = speed;
-          } else {
-            softDropSpeed = 75;
-          }
-          fallingFunc = setInterval(falling, softDropSpeed);
+          fallingFunc = setInterval(falling, 50);
         }
       }
     } else if (e.which === 38) {
