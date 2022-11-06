@@ -364,9 +364,7 @@ const createBlock = () => {
   currentBlock.colour = blockColour[currentBlock.type];
   previewNextBlock();
   addBlockColours();
-  if (fallingFunc === "") {
-    fallingFunc = setInterval(falling, speed);
-  }
+  fallingFunc = setInterval(falling, speed);
   movementEnabled = 1;
 };
 
@@ -543,6 +541,7 @@ const showTitle = () => {
   $(".board-container").append($logo);
   $(".board-container").append($play);
   $play.on("click", () => {
+    $play.off("click");
     $logo.remove();
     $play.remove();
     playGame();
@@ -550,12 +549,12 @@ const showTitle = () => {
 };
 
 const playGame = () => {
-  inputEnabled = 1;
-  fallingFunc = "";
   soundBgm.currentTime = 0;
   soundBgm.play();
   createInitialQueue();
   createBlock();
+  inputEnabled = 1;
+  console.log("STARTING GAME");
 };
 
 // ======================================
@@ -591,7 +590,6 @@ const checkFullRows = () => {
       }
     }
     rowAnimation(fullRows);
-    console.log("removing rows...");
     setTimeout(() => {
       lines += fullRows.length;
       $("#score").text(score);
@@ -885,7 +883,9 @@ $(document).keydown(function (e) {
 $(document).keyup(function (e) {
   if (e.which === 40) {
     clearInterval(fallingFunc);
-    fallingFunc = setInterval(falling, speed);
+    if (movementEnabled === 1 && inputEnabled === 1) {
+      fallingFunc = setInterval(falling, speed);
+    }
   } else if (e.which === 16) {
     shiftEnabled = 0;
   }
