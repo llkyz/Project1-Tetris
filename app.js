@@ -223,7 +223,7 @@ speedTable = [
 ];
 
 let queue = [];
-let fallingFunc = "";
+let fallingFunc = [];
 let movementEnabled = 1;
 
 let currentBlock = {
@@ -366,7 +366,8 @@ const createBlock = () => {
   currentBlock.colour = blockColour[currentBlock.type];
   previewNextBlock();
   addBlockColours();
-  fallingFunc = setInterval(falling, speed);
+  clearFalling();
+  fallingFunc.push(setInterval(falling, speed));
   movementEnabled = 1;
 };
 
@@ -384,7 +385,7 @@ const falling = () => {
   } else {
     // Fix block in place
     movementEnabled = 0;
-    clearInterval(fallingFunc);
+    clearFalling();
     for (let x = 0; x < currentBlock.array[0].length; x++) {
       for (let y = 0; y < currentBlock.array.length; y++) {
         if (currentBlock.array[y][x] == 1) {
@@ -439,7 +440,7 @@ const gameOver = () => {
     $(".occupied").removeClass("occupied");
     $(".board-container").append($gameover);
     $(".board-container").append($reset);
-    $(".board-container").append($title);
+    $(".board-container").append($title.css("top", "62%"));
     $reset.on("click", () => {
       $reset.off("click");
       soundMenu.play();
@@ -594,7 +595,7 @@ const playGame = () => {
 };
 
 const pause = () => {
-  clearInterval(fallingFunc);
+  clearFalling();
   shiftEnabled = 0;
   movementEnabled = 0;
   inputEnabled = 0;
@@ -618,8 +619,16 @@ const pause = () => {
     soundBgm.play();
     movementEnabled = 1;
     inputEnabled = 1;
-    fallingFunc = setInterval(falling, speed);
+    clearFalling();
+    fallingFunc.push(setInterval(falling, speed));
   });
+};
+
+const clearFalling = () => {
+  for (let x = 0; x < fallingFunc.length; x++) {
+    clearInterval(fallingFunc[x]);
+  }
+  fallingFunc = [];
 };
 
 // ======================================
@@ -926,12 +935,12 @@ $(document).keydown(function (e) {
     } else if (e.which === 40) {
       // Down
       if (e.originalEvent.repeat === false) {
-        clearInterval(fallingFunc);
+        clearFalling();
         if (shiftEnabled === 1) {
-          fallingFunc = setInterval(falling, 1);
+          fallingFunc.push(setInterval(falling, 1));
         } else {
           falling();
-          fallingFunc = setInterval(falling, 50);
+          fallingFunc.push(setInterval(falling, 50));
         }
       }
     } else if (e.which === 38) {
@@ -949,9 +958,9 @@ $(document).keydown(function (e) {
 
 $(document).keyup(function (e) {
   if (e.which === 40) {
-    clearInterval(fallingFunc);
+    clearFalling();
     if (movementEnabled === 1 && inputEnabled === 1) {
-      fallingFunc = setInterval(falling, speed);
+      fallingFunc.push(setInterval(falling, speed));
     }
   } else if (e.which === 16) {
     shiftEnabled = 0;
