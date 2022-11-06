@@ -143,3 +143,24 @@ body {
   position: absolute;
   cursor: pointer;
 }
+
+.paused {
+  top: 17%;
+  left: 51%;
+  width: 18.4%;
+  padding-top: 11.45%;
+  background: url("assets/paused.png");
+  background-size: 100% 100%;
+  position: absolute;
+}
+
+.resume {
+  top: 62%;
+  left: 51%;
+  width: 18.1%;
+  padding-top: 4.2%;
+  background: url("assets/resume.png");
+  background-size: cover;
+  position: absolute;
+  cursor: pointer;
+}

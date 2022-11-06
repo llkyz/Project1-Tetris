@@ -306,6 +306,8 @@ $reset = $("<div>").addClass("reset");
 $title = $("<div>").addClass("title");
 $logo = $("<div>").addClass("logo");
 $play = $("<div>").addClass("play");
+$paused = $("<div>").addClass("paused");
+$resume = $("<div>").addClass("resume");
 
 // ======================================
 // Administrative
@@ -485,6 +487,7 @@ const resetGame = () => {
 };
 
 const backToTitle = () => {
+  // From game over screen to title
   let counter = 30;
   counter = transitionFill(counter);
 
@@ -492,6 +495,40 @@ const backToTitle = () => {
     $gameover.remove();
     $reset.remove();
     $title.remove();
+    showTitle();
+  }, counter);
+
+  counter += 1500;
+
+  setTimeout(() => {
+    score = 0;
+    level = 0;
+    lines = 0;
+    speed = (speedTable[level] / 60) * 1000;
+    $("#score").text(0);
+    $("#level").text(0);
+    $("#lines").text(0);
+  }, counter);
+
+  transitionClear(counter);
+};
+
+const backToTitle2 = () => {
+  // From pause screen to title
+  let counter = 30;
+  counter = transitionFill(counter);
+
+  setTimeout(() => {
+    $title.remove();
+    $paused.remove();
+    $resume.remove();
+    $(".square")
+      .removeClass("occupied")
+      .removeClass("currentBlock")
+      .css("background-color", "");
+    $(".preview-square")
+      .removeClass("preview-show")
+      .css("background-color", "");
     showTitle();
   }, counter);
 
@@ -554,7 +591,35 @@ const playGame = () => {
   createInitialQueue();
   createBlock();
   inputEnabled = 1;
-  console.log("STARTING GAME");
+};
+
+const pause = () => {
+  clearInterval(fallingFunc);
+  shiftEnabled = 0;
+  movementEnabled = 0;
+  inputEnabled = 0;
+  soundBgm.pause();
+  $(".board-container").append($paused);
+  $(".board-container").append($title.css("top", "50%"));
+  $(".board-container").append($resume);
+
+  $title.on("click", () => {
+    $title.off("click");
+    $resume.off("click");
+    backToTitle2();
+  });
+
+  $resume.on("click", () => {
+    $resume.off("click");
+    $title.off("click");
+    $paused.remove();
+    $title.remove();
+    $resume.remove();
+    soundBgm.play();
+    movementEnabled = 1;
+    inputEnabled = 1;
+    fallingFunc = setInterval(falling, speed);
+  });
 };
 
 // ======================================
@@ -876,6 +941,8 @@ $(document).keydown(function (e) {
       }
     } else if (e.which === 16) {
       shiftEnabled = 1;
+    } else if (e.which === 27) {
+      pause();
     }
   }
 });
