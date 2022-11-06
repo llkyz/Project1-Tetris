@@ -364,7 +364,9 @@ const createBlock = () => {
   currentBlock.colour = blockColour[currentBlock.type];
   previewNextBlock();
   addBlockColours();
-  fallingFunc = setInterval(falling, speed);
+  if (fallingFunc === "") {
+    fallingFunc = setInterval(falling, speed);
+  }
   movementEnabled = 1;
 };
 
@@ -383,8 +385,6 @@ const falling = () => {
     // Fix block in place
     movementEnabled = 0;
     clearInterval(fallingFunc);
-    clearInterval(movementFunc);
-    movementFunc = "";
     for (let x = 0; x < currentBlock.array[0].length; x++) {
       for (let y = 0; y < currentBlock.array.length; y++) {
         if (currentBlock.array[y][x] == 1) {
@@ -517,13 +517,7 @@ const resetGame = () => {
     counter += 30;
   }
 
-  setTimeout(() => {
-    createInitialQueue();
-    createBlock();
-    soundBgm.currentTime = 0;
-    soundBgm.play();
-    inputEnabled = 1;
-  }, counter);
+  setTimeout(playGame, counter);
 };
 
 const backToTitle = () => {
@@ -575,12 +569,17 @@ const showTitle = () => {
   $play.on("click", () => {
     $logo.remove();
     $play.remove();
-    createInitialQueue();
-    createBlock();
-    soundBgm.currentTime = 0;
-    soundBgm.play();
-    inputEnabled = 1;
+    playGame();
   });
+};
+
+const playGame = () => {
+  inputEnabled = 1;
+  fallingFunc = "";
+  soundBgm.currentTime = 0;
+  soundBgm.play();
+  createInitialQueue();
+  createBlock();
 };
 
 // ======================================
@@ -616,6 +615,7 @@ const checkFullRows = () => {
       }
     }
     rowAnimation(fullRows);
+    console.log("removing rows...");
     setTimeout(() => {
       lines += fullRows.length;
       $("#score").text(score);
@@ -870,48 +870,54 @@ const checkCeilingClear = () => {
 // Keypress / Button Listeners
 // ======================================
 let inputEnabled = 0;
-let movementFunc = "";
+let shiftEnabled = 0;
+let softDropSpeed = 75;
 
 $(document).keydown(function (e) {
   if (movementEnabled === 1 && inputEnabled === 1) {
     if (e.which === 37) {
       // Left
-      inputEnabled = 0;
-      if (nudgeLeft()) {
+      if (nudgeLeft() && e.originalEvent.repeat === false) {
         soundMove.play();
       }
-      movementFunc = setInterval(nudgeLeft, 100);
     } else if (e.which === 39) {
       // Right
-      inputEnabled = 0;
-      if (nudgeRight()) {
+      if (nudgeRight() && e.originalEvent.repeat === false) {
         soundMove.play();
       }
-      movementFunc = setInterval(nudgeRight, 100);
     } else if (e.which === 40) {
       // Down
-      inputEnabled = 0;
-      clearInterval(fallingFunc);
-      falling();
-      movementFunc = setInterval(falling, 100);
+      if (e.originalEvent.repeat === false) {
+        clearInterval(fallingFunc);
+        if (shiftEnabled === 1) {
+          fallingFunc = setInterval(falling, 1);
+        } else {
+          falling();
+          if (speed < 75) {
+            softDropSpeed = speed;
+          } else {
+            softDropSpeed = 75;
+          }
+          fallingFunc = setInterval(falling, softDropSpeed);
+        }
+      }
     } else if (e.which === 38) {
       // Up
-      console.log(e.repeat);
-      if (e.repeat === false) {
+      if (e.originalEvent.repeat === false) {
         rotate();
       }
+    } else if (e.which === 16) {
+      shiftEnabled = 1;
     }
   }
 });
 
 $(document).keyup(function (e) {
-  if (movementFunc !== "") {
-    clearInterval(movementFunc);
-    inputEnabled = 1;
-    movementFunc = "";
-    if (e.which === 40) {
-      fallingFunc = setInterval(falling, speed);
-    }
+  if (e.which === 40) {
+    clearInterval(fallingFunc);
+    fallingFunc = setInterval(falling, speed);
+  } else if (e.which === 16) {
+    shiftEnabled = 0;
   }
 });
 
