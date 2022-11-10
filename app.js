@@ -333,21 +333,23 @@ const previewNextBlock = () => {
     for (let y = 0; y < nextBlock.length; y++) {
       if (nextBlock[y][x] == 1) {
         if (nextBlock.length === 2) {
-          $(`#preview-x${x + 1}y${y}`).addClass("preview-show");
-          $(`#preview-x${x + 1}y${y}`).css(
-            "background-color",
-            `rgb(${blockColour[queue[6]].R},${blockColour[queue[6]].G},${
-              blockColour[queue[6]].B
-            })`
-          );
+          $(`#preview-x${x + 1}y${y}`)
+            .addClass("preview-show")
+            .css(
+              "background-color",
+              `rgb(${blockColour[queue[6]].R},${blockColour[queue[6]].G},${
+                blockColour[queue[6]].B
+              })`
+            );
         } else {
-          $(`#preview-x${x}y${y}`).addClass("preview-show");
-          $(`#preview-x${x}y${y}`).css(
-            "background-color",
-            `rgb(${blockColour[queue[6]].R},${blockColour[queue[6]].G},${
-              blockColour[queue[6]].B
-            })`
-          );
+          $(`#preview-x${x}y${y}`)
+            .addClass("preview-show")
+            .css(
+              "background-color",
+              `rgb(${blockColour[queue[6]].R},${blockColour[queue[6]].G},${
+                blockColour[queue[6]].B
+              })`
+            );
         }
       }
     }
