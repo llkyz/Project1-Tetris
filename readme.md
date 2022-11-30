@@ -5,7 +5,13 @@ An attempt at a faithful(?) recreation of the timeless classic puzzle game, Tetr
 
 ## Installation
 
-The game can be played over at https://llkyz.github.io. Alternatively, clone/download all files into a folder, and run index.html to start.
+The game can be played over at https://project1-tetris.vercel.app. Alternatively, clone/download all files into a folder, and run index.html to start.
+
+## Technologies Used
+
+- HTML5 <picture><source media="(prefers-color-scheme: dark)" srcset="https://cdn.jsdelivr.net/gh/llkyz/llkyz/icons/html5/html5-white-original-wordmark.svg"><img height="30" width="30" src="https://cdn.jsdelivr.net/gh/llkyz/llkyz/icons/html5/html5-original-wordmark.svg"></picture>
+- CSS3 <picture><source media="(prefers-color-scheme: dark)" srcset="https://cdn.jsdelivr.net/gh/llkyz/llkyz/icons/css3/css3-white-original-wordmark.svg"><img height="30" width="30" src="https://cdn.jsdelivr.net/gh/llkyz/llkyz/icons/css3/css3-original-wordmark.svg"></picture>
+- JavaScript <picture><source media="(prefers-color-scheme: dark)" srcset="https://cdn.jsdelivr.net/gh/llkyz/llkyz/icons/javascript/javascript-original.svg"><img height="30" width="30" src="https://cdn.jsdelivr.net/gh/llkyz/llkyz/icons/javascript/javascript-original.svg"></picture>
 
 ## Controls
 
@@ -14,12 +20,6 @@ The game can be played over at https://llkyz.github.io. Alternatively, clone/dow
 - **Down**: Soft drop
 - **Shift** + **Down**: Hard drop
 - **ESC**: Pause game
-
-## Technologies Used
-
-- HTML5 <picture><source media="(prefers-color-scheme: dark)" srcset="https://cdn.jsdelivr.net/gh/llkyz/llkyz/icons/html5/html5-white-original-wordmark.svg"><img height="30" width="30" src="https://cdn.jsdelivr.net/gh/llkyz/llkyz/icons/html5/html5-original-wordmark.svg"></picture>
-- CSS3 <picture><source media="(prefers-color-scheme: dark)" srcset="https://cdn.jsdelivr.net/gh/llkyz/llkyz/icons/css3/css3-white-original-wordmark.svg"><img height="30" width="30" src="https://cdn.jsdelivr.net/gh/llkyz/llkyz/icons/css3/css3-original-wordmark.svg"></picture>
-- JavaScript <picture><source media="(prefers-color-scheme: dark)" srcset="https://cdn.jsdelivr.net/gh/llkyz/llkyz/icons/javascript/javascript-original.svg"><img height="30" width="30" src="https://cdn.jsdelivr.net/gh/llkyz/llkyz/icons/javascript/javascript-original.svg"></picture>
 
 ## Game Mechanics
 Unlike [**Cave Escape**](https://github.com/llkyz/Project1-IcePath) which uses a 2D array to store data, the game state here is stored as classes within each block rendered on the screen. The classes are modified/removed as the game progresses, which simultaneously changes the graphics and styling for the player to see.
