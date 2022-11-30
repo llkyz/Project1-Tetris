@@ -1,4 +1,4 @@
-# GA Project 1: Tetris
+# Tetris
 
 An attempt at a faithful(?) recreation of the timeless classic puzzle game, Tetris. Its looks were borrowed from a few separate incarnations of the game, including the classic Game Boy version and more modern coloured variants.
 
